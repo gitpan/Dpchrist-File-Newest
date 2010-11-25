@@ -1,5 +1,5 @@
 #######################################################################
-# $Id: Makefile.PL,v 1.8 2010-11-25 02:29:41 dpchrist Exp $
+# $Id: Makefile.PL,v 1.9 2010-11-25 20:30:36 dpchrist Exp $
 #
 # Copyright 2010 by David Paul Christensen dpchrist@holgerdanske.com
 #
@@ -23,9 +23,10 @@ use ExtUtils::MakeMaker;
 use Dpchrist::Module::MakefilePL (
     -mcpani		=> $ENV{CPAN_AUTHORID},
     -pod2html	 	=> [qw(
-	bin/newest
     	lib/Dpchrist/File/Newest.pm
+	bin/newest
     )],
+    -readme	 	=> qw(lib/Dpchrist/File/Newest.pm),
     -release		=> $ENV{RELEASE_ROOT},
 );
 
@@ -33,8 +34,8 @@ WriteMakefile(
     NAME		=> 'Dpchrist::File::Newest',
     VERSION_FROM	=> 'lib/Dpchrist/File/Newest.pm',
     PREREQ_PM		=> {
-	'Dpchrist::Debug'	=> 1.036,
-	'Dpchrist::Module'	=> 1.016,
+	'Dpchrist::Debug'	=> 1.041,
+	'Dpchrist::Module'	=> 1.021,
 	'feature'		=> 0,
     },
     AUTHOR		=>
