@@ -1,5 +1,5 @@
 #######################################################################
-# $Id: Makefile.PL,v 1.7 2010-02-27 22:12:50 dpchrist Exp $
+# $Id: Makefile.PL,v 1.8 2010-11-25 02:29:41 dpchrist Exp $
 #
 # Copyright 2010 by David Paul Christensen dpchrist@holgerdanske.com
 #
@@ -18,7 +18,6 @@
 # USA.
 #######################################################################
 
-use 5.010000;
 use ExtUtils::MakeMaker;
 
 use Dpchrist::Module::MakefilePL (
