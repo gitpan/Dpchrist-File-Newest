@@ -1,13 +1,10 @@
-LICENSE
+Changes
+Makefile.PL
+LICENSE.txt
 MANIFEST
 README
-Makefile.PL
 bin/newest
 lib/Dpchrist/File/Newest.pm
-t/0_compile_modules.t
-t/0_compile_scripts.t
-t/1_Dpchrist-File-Newest.t
-t/2_newest.t
-t/9_pod.t
-t/9_prereq.t
+t/Dpchrist-File-Newest.t
+t/newest.t
 META.yml                                 Module meta-data (added by MakeMaker)
