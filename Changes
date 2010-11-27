@@ -1,6 +1,0 @@
-Revision history for Perl extension Dpchrist::File::Newest.
-
-0.01  Fri May  1 08:31:55 2009
-	- original version; created by h2xs 1.23 with options
-		-X -A -b 5.8.0 -n Dpchrist::File::Newest
-

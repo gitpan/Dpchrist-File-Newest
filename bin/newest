@@ -1,49 +1,6 @@
 #!/usr/bin/perl
 #######################################################################
-
-=head1 NAME
-
-newest - find newest file
-
-
-
-=head1 VERSION
-
-$Id: newest,v 1.13 2009-05-01 15:47:21 dpchrist Exp $
-
-
-
-=head1 SYNOPSIS
-
-newest [options] PATH...
-
-    @ARGVFILE           Insert command line arguments from ARGVFILE
-    --debug, -d         Generate debug messages
-    --help, -h, -?      Print a brief help message
-    --man               Print the manual page
-    --number, -n N      Print the N newest files
-
-
-
-=head1 DESCRIPTION
-
-B<newest> will recursively search all files and folders given by PATH
-and print the absolute path of the newest file.  If more than one file
-has the same newest time stamp, only print one file.
-
-
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright 2009 by David Paul Christensen  dpchrist@holgerdanske.com
-
-This software is released under the terms of the Artistic License 2.0,
-as published by The Perl Foundation.  Please see the file LICENSE.txt
-in the source distribution or The Perl Foundation web site at
-http://www.perlfoundation.org/.
-
-=cut
-
+# $Id: newest,v 1.26 2010-02-27 22:12:50 dpchrist Exp $
 #######################################################################
 # uses:
 #----------------------------------------------------------------------
@@ -51,99 +8,178 @@ http://www.perlfoundation.org/.
 use strict;
 use warnings;
 
-use Data::Dumper;
-$Data::Dumper::Sortkeys = 1;
+use constant			DEBUG => 0;
 
-use Dpchrist::Timestamp		qw( :all );
-use File::Spec::Functions	qw( catfile rel2abs );
+use Carp;
+use Data::Dumper;
+use Dpchrist::Debug		qw( :all );
+use Dpchrist::File::Newest	qw( :all );
+use File::Spec::Functions	qw( rel2abs );
 use File::Find;
 use Getopt::Long;
 use Pod::Usage;
-use Time::localtime;
 
 #######################################################################
 # globals:
 #----------------------------------------------------------------------
 
-$| = 1;
+our $VERSION	= sprintf "%d.%03d", q$Revision: 1.26 $ =~ /(\d+)/g;
 
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.13 $ =~ /: (\d+)\.(\d+)/;
+### suppress 'Name "Dpchrist::File::Newest::opt" used only once'
+$Dpchrist::File::Newest::opt{-used_only_once}++;
 
-##### command line option values:
-my $debug		= 0;
-my $help		= 0;
-my $man			= 0;
-my $notime		= 0;
-my $number		= 1;
+my $opt = \%Dpchrist::File::Newest::opt;
 
-##### parameters for GetOption():
-my @GetOptions_parms = (
-    'debug|d'           => \$debug,
-    'help|h|?'          => \$help,
-    'man'               => \$man,
-    'number|n=i'	=> \$number,
+my @getoptions_args = (
+    'help|h|?'          => \$opt->{-help},
+    'man'               => \$opt->{-man},
+    'number|n=i'	=> \$opt->{-number},
 );
-
-##### data structure:
-my %mtimes_paths;
-#	key	is file modification time
-#	value	is a reference to a list containing file paths
-
-#######################################################################
-# subroutines:
-#----------------------------------------------------------------------
-
-sub process
-{
-    my $path = rel2abs($File::Find::name);
-    
-    return if -d $path;
-    
-    my $mtime = (stat($path))[9] || 0;
-
-    print join ' ', __FILE__, __LINE__, (caller(0))[3] . "()\n",
-	Data::Dumper->Dump([$path, $mtime], [qw(path mtime)])
-	if $debug;
-
-    push(@{$mtimes_paths{$mtime}}, $path);
-}
 
 #######################################################################
 # main script:
 #----------------------------------------------------------------------
 
 {
-    GetOptions(@GetOptions_parms) or pod2usage(2);
+    ### process command-line options:
 
-    pod2usage(-verbose => 2) if $man;
-    pod2usage() if $help || scalar(@ARGV) < 1;
-    
-    ##### fills global variable %mtime_paths
-    find(\&process, @ARGV);
+    Getopt::Long::Configure("bundling");
 
-    print join ' ', __FILE__, __LINE__, (caller(0))[3] . "()\n",
-	Data::Dumper->Dump([\%mtimes_paths], [qw(*mtimes_paths)])
-	if $debug;
+    my $r = GetOptions(@getoptions_args);
 
-    my @mtimes = sort keys %mtimes_paths;
-    print join ' ', __FILE__, __LINE__, (caller(0))[3] . "()\n",
-	Data::Dumper->Dump([\@mtimes], [qw(*mtimes)])
-	if $debug;
-
-    while ($number--) {
-
-	# mtime of newest file(s):
-	my $t = pop @mtimes;	
-
-	# first file with that mtime:
-	my $f = shift @{$mtimes_paths{$t}};
-
-	print join ' ', __FILE__, __LINE__, (caller(0))[3] . "()\n",
-	    Data::Dumper->Dump([$t, $f], [qw(t f)])
-	    if $debug;
-
-	print "$f\n";
+    if (DEBUG && debug_enabled()) {
+	$Data::Dumper::Sortkeys	= 1;
+	$|			= 1;
+	ddump [$opt, \@ARGV],
+	    [qw(opt   *ARGV)];
     }
+
+    confess "ERROR processing command line options"
+    unless $r;
+
+    pod2usage(-verbose => 2, -exitval => 0) if $opt->{-man};
+
+    pod2usage(0) if $opt->{-help};
+
+    pod2usage(1) unless @ARGV;
+
+    
+    ### get sorted list of files, oldest to newest:
+
+    my $ra = newest(@ARGV);
+
+
+    ### print the newest ones:
+
+    print(pop @$ra, "\n") while @$ra && $opt->{-number}--;
 }
+
+#######################################################################
+
+=head1 NAME
+
+newest - find newest files
+
+
+=head1 SYNOPSIS
+
+    $ newest [OPTION...] PATH...
+
+    --help, -h, -?      Print a brief help message
+    --man               Print the manual page
+    --number, -n N      Print the N newest files
+
+
+=head1 DESCRIPTION
+
+B<newest> will recursively search all files and folders given by PATH
+and print the path of the newest file.
+
+
+=head2 PATHS WITH SPACES
+
+If the path(s) output by this program contain spaces,
+feeding the output to another program (such as 'ls') will fail:
+
+    2009-08-31 00:48:38 Administrator@p43400e ~
+    $ newest /cygdrive/c/Documents\ and\ Settings/Administrator/My\ Documents/
+    /cygdrive/c/Documents and Settings/Administrator/My Documents/.viminfo
+
+    2009-08-31 00:48:43 Administrator@p43400e ~
+    $ ll -l `newest /cygdrive/c/Documents\ and\ Settings/Administrator/My\ Documents/`
+    ls: cannot access /cygdrive/c/Documents: No such file or directory
+    ls: cannot access and: No such file or directory
+    ls: cannot access Settings/Administrator/My: No such file or directory
+    ls: cannot access Documents/.viminfo: No such file or directory
+
+This problem does not appear to be unique to B<newest>:
+
+    2009-08-31 00:48:51 Administrator@p43400e ~
+    $ echo '/cygdrive/c/Documents\ and\ Settings/Administrator/My\ Documents/'
+    /cygdrive/c/Documents\ and\ Settings/Administrator/My\ Documents/
+
+    2009-08-31 00:49:49 Administrator@p43400e ~
+    $ ls -l `echo '/cygdrive/c/Documents\ and\ Settings/Administrator/My\ Documents/'`
+    ls: cannot access /cygdrive/c/Documents\: No such file or directory
+    ls: cannot access and\: No such file or directory
+    ls: cannot access Settings/Administrator/My\: No such file or directory
+    ls: cannot access Documents/: No such file or directory
+
+
+A work-around is to write a Perl one-liner
+that converts spaces to nulls
+and install it as an alias in .bashrc:
+
+    alias nl2null="perl -ne 's/\n/\00/; print'"
+
+
+And then use 'xargs' with the -0 option:
+
+    2009-10-30 21:20:06 dpchrist@p43400e ~
+    $ newest -n 3 /cygdrive/c/Documents\ and\ Settings/dpchrist/My\ Documents/Dp* | nl2null | xargs -0 ls -dl
+    -rwxr-xr-x 1 dpchrist None 5750 Oct 30 21:20 /cygdrive/c/Documents and Settings/dpchrist/My Documents/Dpchrist-File-Newest/bin/newest
+    -rw-r--r-- 1 dpchrist None   23 Oct 30 21:12 /cygdrive/c/Documents and Settings/dpchrist/My Documents/Dpchrist-File-Newest/t/CVS/Repository
+    -rw-r--r-- 1 dpchrist None   44 Oct 30 21:12 /cygdrive/c/Documents and Settings/dpchrist/My Documents/Dpchrist-File-Newest/t/CVS/Root 
+
+
+=head1 INSTALLATION
+
+    This software is installed as part of Dpchrist::File::Newest.
+
+
+=head1 DEPENDENCIES
+
+    Dpchrist::File::Newest
+
+
+=head1 SEE ALSO
+
+    Dpchrist::File::Newest
+
+
+=head1 AUTHOR
+
+    David Paul Christensen  dpchrist@holgerdanske.com
+
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2010 by David Paul Christensen dpchrist@holgerdanske.com
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
+USA.
+
+=cut
 
 #######################################################################
