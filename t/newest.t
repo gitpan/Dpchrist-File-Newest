@@ -1,4 +1,4 @@
-# $Id: 2_newest.t,v 1.4 2009-12-02 20:02:33 dpchrist Exp $
+# $Id: newest.t,v 1.4 2009-12-02 20:02:33 dpchrist Exp $
 
 use Test::More 			tests => 2;
 

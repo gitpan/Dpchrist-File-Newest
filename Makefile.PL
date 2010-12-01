@@ -1,5 +1,5 @@
 #######################################################################
-# $Id: Makefile.PL,v 1.12 2010-11-27 07:37:15 dpchrist Exp $
+# $Id: Makefile.PL,v 1.14 2010-12-01 19:49:06 dpchrist Exp $
 #
 # Copyright 2010 by David Paul Christensen dpchrist@holgerdanske.com
 #
@@ -18,40 +18,42 @@
 # USA.
 #######################################################################
 
+package Dpchrist::ExtUtils::MakeMaker;	# for symbols
+
+use ExtUtils::MakeMaker;
+
+eval "use Test::Manifest";
+warn $@ if $@;
+
 eval {
-    require Dpchrist::Module::MakefilePL;
-    
-    import Dpchrist::Module::MakefilePL (
-	-mcpani		=> $ENV{CPAN_AUTHORID},
-	-pod2html	=> [qw(
-	    lib/Dpchrist/File/Newest.pm
-	    bin/newest
-	)],
-	-readme	 	=> 'lib/Dpchrist/File/Newest.pm',
-	-release	=> $ENV{RELEASE_ROOT},
+    require Dpchrist::ExtUtils::MakeMaker;
+    import  Dpchrist::ExtUtils::MakeMaker (
+	postamble => sub {
+	    my ($o, $prev) = @_;
+	    return join('',
+		$prev,
+		mcpani  ($o, $ENV{CPAN_AUTHORID}),
+		pod2html($o, qw( lib/Dpchrist/File/Newest.pm
+				 perl-bin/newest )),
+		readme  ($o, 'lib/Dpchrist/File/Newest.pm'),
+		release ($o, $ENV{RELEASE_ROOT}),
+	    );
+	},
     );
 };
 warn $@ if $@;
-
-use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME		=> 'Dpchrist::File::Newest',
     VERSION_FROM	=> 'lib/Dpchrist/File/Newest.pm',
     PREREQ_PM		=> {
-	Dpchrist::Debug		=> 1.044,
-	Dpchrist::Module	=> 1.026,
-	Getopt::Long		=> 0,
-	Pod::Html		=> 0,
-	Pod::Text		=> 0,
-	Pod::Usage		=> 0,
-	feature			=> 0,
+	Dpchrist::Debug		=> 1.046,
     },
     AUTHOR		=>
     	'David Paul Christensen <dpchrist@holgerdanske.com>',
-    EXE_FILES           => ['./bin/newest'],
+    EXE_FILES           => ['./perl-bin/newest'],
     clean		=> {
-	FILES => q( *~tmp */*~tmp Dpchrist* newest* ),
+	FILES => q( *~tmp */*~tmp *.tar debug.log ),
     },
 );
 
