@@ -1,5 +1,5 @@
 #######################################################################
-# $Id: Newest.pm,v 1.30 2010-12-03 05:13:50 dpchrist Exp $
+# $Id: Newest.pm,v 1.31 2010-12-13 03:23:56 dpchrist Exp $
 #######################################################################
 # package:
 #----------------------------------------------------------------------
@@ -21,7 +21,7 @@ our @EXPORT_OK	= ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT	= qw();
 
-our $VERSION	= sprintf "%d.%03d", q$Revision: 1.30 $ =~ /(\d+)/g;
+our $VERSION	= sprintf "%d.%03d", q$Revision: 1.31 $ =~ /(\d+)/g;
 
 #######################################################################
 # uses:
@@ -57,7 +57,7 @@ Dpchrist::File::Newest - find newest files
 
 =head1 DESCRIPTION
 
-This documentation describes module revision $Revision: 1.30 $.
+This documentation describes module revision $Revision: 1.31 $.
 
 
 This is alpha test level software

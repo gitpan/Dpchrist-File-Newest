@@ -1,5 +1,5 @@
 #######################################################################
-# $Id: Makefile.PL,v 1.15 2010-12-03 05:13:50 dpchrist Exp $
+# $Id: Makefile.PL,v 1.16 2010-12-13 03:23:56 dpchrist Exp $
 #
 # Copyright 2010 by David Paul Christensen dpchrist@holgerdanske.com
 #
@@ -27,8 +27,8 @@ warn $@ if $@;
 
 eval {
     require Dpchrist::ExtUtils::MakeMaker;
-    die 'Requires Dpchrist::ExtUtils::MakeMaker 1.013 or higher'
-    	unless 1.013 <= $Dpchrist::ExtUtils::MakeMaker::VERSION;
+    die 'Skipping Dpchrist::ExtUtils::MakeMaker'
+    	unless 1.021 <= $Dpchrist::ExtUtils::MakeMaker::VERSION;
     import  Dpchrist::ExtUtils::MakeMaker (
 	postamble => sub {
 	    my ($o, $prev) = @_;
@@ -49,22 +49,21 @@ WriteMakefile(
     NAME		=> 'Dpchrist::File::Newest',
     VERSION_FROM	=> 'lib/Dpchrist/File/Newest.pm',
     PREREQ_PM		=> {
-	Carp				=> 0,
-	Cwd				=> 0,
-	Data::Dumper			=> 0,
-	Dpchrist::Debug			=> 1.047,
-	Dpchrist::ExtUtils::MakeMaker	=> 1.015,
-	Exporter			=> 0,
-	ExtUtils::MakeMaker		=> 0,
-	File::Find			=> 0,
-	File::Spec::Functions		=> 0,
-	Getopt::Long			=> 0,
-	Pod::Usage			=> 0,
-	Test::Compile			=> 0,
-	Test::Manifest			=> 0,
-	Test::More			=> 0,
-	Test::Pod			=> 0,
-	Test::Prereq			=> 0,
+	Carp			=> 1.08,
+	Cwd			=> 3.2501,
+	Data::Dumper		=> 2.121_14,
+	Dpchrist::Debug		=> 1.048,
+	Exporter		=> 5.62,
+	ExtUtils::MakeMaker	=> 6.54,
+	File::Find		=> 1.12,
+	File::Spec::Functions	=> 3.2501,
+	Getopt::Long		=> 2.37,
+	Pod::Usage		=> 1.35,
+	Test::Compile		=> 0.10,
+	Test::Manifest		=> 1.22,
+	Test::More		=> 0.72,
+	Test::Pod		=> 1.40,
+	Test::Prereq		=> 1.037,
     },
     AUTHOR		=>
     	'David Paul Christensen <dpchrist@holgerdanske.com>',
