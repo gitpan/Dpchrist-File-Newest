@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Dpchrist-File-Newest
-version:            1.031
+version:            1.032
 abstract:           ~
 author:
     - David Paul Christensen <dpchrist@holgerdanske.com>
@@ -14,7 +14,7 @@ requires:
     Carp:                 1.08
     Cwd:                  3.2501
     Data::Dumper:         2.12114
-    Dpchrist::Debug:      1.048
+    Dpchrist::Debug:      1.049
     Exporter:             5.62
     ExtUtils::MakeMaker:  6.54
     File::Find:           1.12
